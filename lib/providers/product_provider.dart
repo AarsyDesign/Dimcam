@@ -19,7 +19,7 @@ class ProductProvider extends ChangeNotifier {
   Future<void> _load() async {
     try {
       _items = await _db.getProducts();
-    } catch (e) {
+    } catch (_) {
       _items = [];
     }
     _loading = false;
@@ -38,5 +38,20 @@ class ProductProvider extends ChangeNotifier {
     } catch (_) {
       return null;
     }
+  }
+
+  Future<void> add(Product p) async {
+    await _db.upsertProduct(p);
+    await refresh();
+  }
+
+  Future<void> update(Product p) async {
+    await _db.upsertProduct(p);
+    await refresh();
+  }
+
+  Future<void> remove(int id) async {
+    await _db.deleteProduct(id);
+    await refresh();
   }
 }

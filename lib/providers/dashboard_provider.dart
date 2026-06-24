@@ -1,8 +1,8 @@
 import 'package:flutter/foundation.dart';
 
-import '../data/models/stock_item.dart';
+import '../data/models/bahan.dart';
 import '../data/models/transaction.dart';
-import 'stock_provider.dart';
+import 'bahan_provider.dart';
 import 'transaction_provider.dart';
 
 /// 📊 Data agregasi dashboard — total penjualan, laba, transaksi, produk terlaris, ringkasan stok.
@@ -13,7 +13,7 @@ class DashboardSummary {
     required this.transactionCountToday,
     required this.bestSeller,
     required this.lowStock,
-    required this.totalStockItems,
+    required this.totalBahan,
     required this.weeklySales,
   });
 
@@ -24,8 +24,8 @@ class DashboardSummary {
   /// Produk terlaris hari ini (null bila belum ada transaksi).
   final BestSeller? bestSeller;
 
-  final List<StockItem> lowStock;
-  final int totalStockItems;
+  final List<Bahan> lowStock;
+  final int totalBahan;
 
   /// Penjualan 7 hari terakhir (index 0 = 6 hari lalu, 6 = hari ini).
   final List<DailySales> weeklySales;
@@ -46,7 +46,7 @@ class DailySales {
   final int count;
 }
 
-/// 🏠 Provider dashboard — menghitung ringkasan dari transaksi & stok.
+/// 🏠 Provider dashboard — menghitung ringkasan dari transaksi & bahan.
 class DashboardProvider extends ChangeNotifier {
   DashboardProvider();
 
@@ -58,14 +58,13 @@ class DashboardProvider extends ChangeNotifier {
   /// Hitung ulang ringkasan dari provider turunan.
   void recompute({
     required TransactionProvider transactions,
-    required StockProvider stocks,
+    required BahanProvider bahans,
   }) {
     final now = DateTime.now();
     final todayStart = DateTime(now.year, now.month, now.day);
 
-    final todayTx = transactions.items.where((t) =>
-        t.dateTime.isAfter(todayStart.subtract(const Duration(seconds: 1))) ||
-        t.dateTime.isAtSameMomentAs(todayStart));
+    final todayTx = transactions.items.where(
+        (t) => !t.dateTime.isBefore(todayStart) && t.dateTime.isBefore(todayStart.add(const Duration(days: 1))));
 
     int totalSales = 0;
     int totalProfit = 0;
@@ -83,13 +82,12 @@ class DashboardProvider extends ChangeNotifier {
 
     BestSeller? best;
     if (qtyPerProduct.isNotEmpty) {
-      final sorted = qtyPerProduct.entries.toList()
-        ..sort((a, b) => b.value.compareTo(a.value));
+      final sorted = qtyPerProduct.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
       final topId = sorted.first.key;
       final sample = samplePerProduct[topId]!;
       best = BestSeller(
-        name: sample.product.name,
-        emoji: sample.product.emoji,
+        name: sample.productName,
+        emoji: sample.productEmoji,
         qty: sorted.first.value,
         revenue: revenuePerProduct[topId]!,
       );
@@ -111,10 +109,10 @@ class DashboardProvider extends ChangeNotifier {
     _summary = DashboardSummary(
       totalSalesToday: totalSales,
       totalProfitToday: totalProfit,
-      transactionCountToday: qtyPerProduct.isEmpty ? 0 : todayTx.length,
+      transactionCountToday: todayTx.length,
       bestSeller: best,
-      lowStock: stocks.lowStock,
-      totalStockItems: stocks.items.length,
+      lowStock: bahans.lowStock,
+      totalBahan: bahans.items.length,
       weeklySales: weekly,
     );
     notifyListeners();

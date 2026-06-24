@@ -1,34 +1,42 @@
-import 'product.dart';
-
 /// 🧾 Item transaksi penjualan (1 transaksi = 1 produk dengan qty tertentu).
+///
+/// Menyimpan snapshot [hppPerUnit] saat transaksi tercatat agar profit
+/// tetap akurat secara historis walau resep/HPP berubah di kemudian hari.
 class Transaction {
   Transaction({
     required this.id,
     required this.productId,
-    required this.product,
+    required this.productName,
+    required this.productEmoji,
     required this.quantity,
-    required this.totalPrice,
+    required this.unitPrice,
+    required this.hppPerUnit,
     required this.dateTime,
     this.note,
   });
 
   final int id;
   final int productId;
-  final Product product;
+  final String productName;
+  final String productEmoji;
   final int quantity;
-  final int totalPrice; // qty * sellingPrice
+  final int unitPrice; // harga jual per unit saat transaksi
+  final int hppPerUnit; // HPP per unit saat transaksi (snapshot)
   final DateTime dateTime;
   final String? note;
 
-  /// Laba dari transaksi ini = qty * (sellingPrice - hpp).
-  int get profit => quantity * (product.sellingPrice - product.hpp);
+  int get totalPrice => quantity * unitPrice;
+  int get totalCost => quantity * hppPerUnit;
+  int get profit => totalPrice - totalCost;
 
-  factory Transaction.fromMap(Map<String, dynamic> map, Product product) => Transaction(
+  factory Transaction.fromMap(Map<String, dynamic> map) => Transaction(
         id: map['id'] as int,
         productId: map['product_id'] as int,
-        product: product,
+        productName: map['product_name'] as String,
+        productEmoji: map['product_emoji'] as String? ?? '🥟',
         quantity: (map['quantity'] as num).toInt(),
-        totalPrice: (map['total_price'] as num).toInt(),
+        unitPrice: (map['unit_price'] as num).toInt(),
+        hppPerUnit: (map['hpp_per_unit'] as num).toInt(),
         dateTime: DateTime.fromMillisecondsSinceEpoch(map['date_time'] as int),
         note: map['note'] as String?,
       );
@@ -36,8 +44,11 @@ class Transaction {
   Map<String, dynamic> toMap() => {
         'id': id,
         'product_id': productId,
+        'product_name': productName,
+        'product_emoji': productEmoji,
         'quantity': quantity,
-        'total_price': totalPrice,
+        'unit_price': unitPrice,
+        'hpp_per_unit': hppPerUnit,
         'date_time': dateTime.millisecondsSinceEpoch,
         'note': note,
       };

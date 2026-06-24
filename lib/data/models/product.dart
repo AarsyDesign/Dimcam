@@ -1,4 +1,7 @@
 /// 🥟 Model produk dimsum.
+///
+/// HPP dihitung otomatis dari resep (lihat [HppProvider]).
+/// Model ini hanya menyimpan identitas & harga jual produk.
 class Product {
   Product({
     required this.id,
@@ -6,7 +9,6 @@ class Product {
     required this.emoji,
     required this.category,
     required this.sellingPrice,
-    required this.hpp,
     required this.unit,
     this.description,
   });
@@ -15,16 +17,9 @@ class Product {
   final String name;
   final String emoji;
   final String category;
-  final int sellingPrice; // harga jual per pcs / porsi
-  final int hpp; // harga pokok produksi
+  final int sellingPrice; // harga jual per unit
   final String unit; // "pcs", "porsi"
   final String? description;
-
-  /// Margin keuntungan absolut.
-  int get margin => sellingPrice - hpp;
-
-  /// Margin keuntungan dalam persen.
-  double get marginPercent => sellingPrice == 0 ? 0 : (margin / sellingPrice) * 100;
 
   /// Inisial untuk avatar.
   String get initial => name.isNotEmpty ? name[0].toUpperCase() : 'D';
@@ -35,7 +30,6 @@ class Product {
         emoji: map['emoji'] as String? ?? '🥟',
         category: map['category'] as String? ?? 'Dimsum',
         sellingPrice: (map['selling_price'] as num).toInt(),
-        hpp: (map['hpp'] as num).toInt(),
         unit: map['unit'] as String? ?? 'pcs',
         description: map['description'] as String?,
       );
@@ -46,7 +40,6 @@ class Product {
         'emoji': emoji,
         'category': category,
         'selling_price': sellingPrice,
-        'hpp': hpp,
         'unit': unit,
         'description': description,
       };
@@ -57,7 +50,6 @@ class Product {
     String? emoji,
     String? category,
     int? sellingPrice,
-    int? hpp,
     String? unit,
     String? description,
   }) =>
@@ -67,7 +59,6 @@ class Product {
         emoji: emoji ?? this.emoji,
         category: category ?? this.category,
         sellingPrice: sellingPrice ?? this.sellingPrice,
-        hpp: hpp ?? this.hpp,
         unit: unit ?? this.unit,
         description: description ?? this.description,
       );

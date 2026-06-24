@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 import '../data/database/database_helper.dart';
 import '../data/models/transaction.dart';
 
-/// 💰 Provider daftar transaksi penjualan.
+/// 💰 Provider transaksi penjualan — CRUD + pencarian.
 class TransactionProvider extends ChangeNotifier {
   TransactionProvider() {
     _load();
@@ -16,10 +16,17 @@ class TransactionProvider extends ChangeNotifier {
   bool _loading = true;
   bool get loading => _loading;
 
+  String _query = '';
+  String get query => _query;
+
   Future<void> _load() async {
     try {
-      _items = await _db.getTransactions();
-    } catch (e) {
+      if (_query.isEmpty) {
+        _items = await _db.getTransactions();
+      } else {
+        _items = await _db.searchTransactions(_query);
+      }
+    } catch (_) {
       _items = [];
     }
     _loading = false;
@@ -32,13 +39,26 @@ class TransactionProvider extends ChangeNotifier {
     await _load();
   }
 
-  /// Tambah transaksi baru.
+  Future<void> setQuery(String q) async {
+    _query = q.trim();
+    await _load();
+  }
+
+  Future<void> clearQuery() async {
+    _query = '';
+    await _load();
+  }
+
   Future<void> add(Transaction t) async {
     await _db.insertTransaction(t);
     await refresh();
   }
 
-  /// Hapus transaksi.
+  Future<void> update(Transaction t) async {
+    await _db.updateTransaction(t);
+    await refresh();
+  }
+
   Future<void> remove(int id) async {
     await _db.deleteTransaction(id);
     await refresh();
@@ -53,5 +73,17 @@ class TransactionProvider extends ChangeNotifier {
             t.dateTime.month == now.month &&
             t.dateTime.day == now.day)
         .toList();
+  }
+
+  /// Total penjualan hari ini (semua item, abaikan query pencarian).
+  Future<int> totalSalesToday() async {
+    final all = await _db.getTransactions();
+    final now = DateTime.now();
+    return all
+        .where((t) =>
+            t.dateTime.year == now.year &&
+            t.dateTime.month == now.month &&
+            t.dateTime.day == now.day)
+        .fold(0, (s, t) => s + t.totalPrice);
   }
 }
