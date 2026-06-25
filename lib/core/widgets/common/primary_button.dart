@@ -37,7 +37,7 @@ class _PrimaryButtonState extends State<PrimaryButton> {
     Widget content = Container(
       height: widget.height,
       decoration: BoxDecoration(
-        gradient: enabled ? widget.gradient : LinearGradient(colors: [AppColors.textMuted, AppColors.textMuted]),
+        gradient: enabled ? widget.gradient : const LinearGradient(colors: [AppColors.textMuted, AppColors.textMuted]),
         borderRadius: BorderRadius.circular(AppDimens.radiusFull),
         boxShadow: enabled
             ? [

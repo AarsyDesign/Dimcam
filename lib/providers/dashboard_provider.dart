@@ -1,8 +1,8 @@
 import 'package:flutter/foundation.dart';
 
-import '../data/models/bahan.dart';
 import '../data/models/transaction.dart';
-import 'bahan_provider.dart';
+import 'debt_provider.dart';
+import 'stock_provider.dart';
 import 'transaction_provider.dart';
 
 /// 📊 Data agregasi dashboard — total penjualan, laba, transaksi, produk terlaris, ringkasan stok.
@@ -13,8 +13,11 @@ class DashboardSummary {
     required this.transactionCountToday,
     required this.bestSeller,
     required this.lowStock,
-    required this.totalBahan,
+    required this.totalStockItems,
     required this.weeklySales,
+    required this.totalPiutang,
+    required this.piutangJatuhTempo,
+    required this.piutangLunas,
   });
 
   final int totalSalesToday;
@@ -24,11 +27,15 @@ class DashboardSummary {
   /// Produk terlaris hari ini (null bila belum ada transaksi).
   final BestSeller? bestSeller;
 
-  final List<Bahan> lowStock;
-  final int totalBahan;
+  final List<StockSummaryItem> lowStock;
+  final int totalStockItems;
 
   /// Penjualan 7 hari terakhir (index 0 = 6 hari lalu, 6 = hari ini).
   final List<DailySales> weeklySales;
+
+  final int totalPiutang;
+  final int piutangJatuhTempo;
+  final int piutangLunas;
 }
 
 class BestSeller {
@@ -52,13 +59,14 @@ class DashboardProvider extends ChangeNotifier {
 
   DashboardSummary? _summary;
   DashboardSummary? get summary => _summary;
-  bool _loading = false;
+  final bool _loading = false;
   bool get loading => _loading;
 
   /// Hitung ulang ringkasan dari provider turunan.
   void recompute({
     required TransactionProvider transactions,
-    required BahanProvider bahans,
+    required StockProvider stocks,
+    DebtProvider? debts,
   }) {
     final now = DateTime.now();
     final todayStart = DateTime(now.year, now.month, now.day);
@@ -111,9 +119,12 @@ class DashboardProvider extends ChangeNotifier {
       totalProfitToday: totalProfit,
       transactionCountToday: todayTx.length,
       bestSeller: best,
-      lowStock: bahans.lowStock,
-      totalBahan: bahans.items.length,
+      lowStock: stocks.lowStockSummary,
+      totalStockItems: stocks.totalStockItems,
       weeklySales: weekly,
+      totalPiutang: debts?.totalPiutang ?? 0,
+      piutangJatuhTempo: debts?.totalJatuhTempo ?? 0,
+      piutangLunas: debts?.totalLunas ?? 0,
     );
     notifyListeners();
   }

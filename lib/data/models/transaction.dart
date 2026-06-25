@@ -13,6 +13,8 @@ class Transaction {
     required this.hppPerUnit,
     required this.dateTime,
     this.note,
+    this.customerId,
+    this.customerName,
   });
 
   final int id;
@@ -24,6 +26,8 @@ class Transaction {
   final int hppPerUnit; // HPP per unit saat transaksi (snapshot)
   final DateTime dateTime;
   final String? note;
+  final int? customerId;
+  final String? customerName;
 
   int get totalPrice => quantity * unitPrice;
   int get totalCost => quantity * hppPerUnit;
@@ -39,6 +43,8 @@ class Transaction {
         hppPerUnit: (map['hpp_per_unit'] as num).toInt(),
         dateTime: DateTime.fromMillisecondsSinceEpoch(map['date_time'] as int),
         note: map['note'] as String?,
+        customerId: map['customer_id'] as int?,
+        customerName: map['customer_name'] as String?,
       );
 
   Map<String, dynamic> toMap() => {
@@ -51,5 +57,7 @@ class Transaction {
         'hpp_per_unit': hppPerUnit,
         'date_time': dateTime.millisecondsSinceEpoch,
         'note': note,
+        'customer_id': customerId,
+        'customer_name': customerName,
       };
 }

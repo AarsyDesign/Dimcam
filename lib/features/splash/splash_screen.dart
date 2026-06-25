@@ -78,8 +78,8 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
 
               // Bunga dekoratif pojok.
               Positioned(top: 40, left: 24, child: FlowerDecoration(size: 46, petalColor: AppColors.white.withValues(alpha: 0.85))),
-              Positioned(top: 70, right: 30, child: FlowerDecoration(size: 34, petalColor: AppColors.sparkleYellow)),
-              Positioned(bottom: 60, left: 40, child: FlowerDecoration(size: 38, petalColor: AppColors.lavender)),
+              const Positioned(top: 70, right: 30, child: FlowerDecoration(size: 34, petalColor: AppColors.sparkleYellow)),
+              const Positioned(bottom: 60, left: 40, child: FlowerDecoration(size: 38, petalColor: AppColors.lavender)),
               Positioned(bottom: 90, right: 24, child: FlowerDecoration(size: 52, petalColor: AppColors.white.withValues(alpha: 0.9))),
 
               // Konten tengah.
@@ -133,7 +133,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(Icons.favorite, size: 14, color: AppColors.white),
+                                  const Icon(Icons.favorite, size: 14, color: AppColors.white),
                                   const SizedBox(width: 6),
                                   Text(
                                     'Manajer Dimsum Manis',
@@ -143,7 +143,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                                     ),
                                   ),
                                   const SizedBox(width: 6),
-                                  Icon(Icons.favorite, size: 14, color: AppColors.white),
+                                  const Icon(Icons.favorite, size: 14, color: AppColors.white),
                                 ],
                               ),
                             ),

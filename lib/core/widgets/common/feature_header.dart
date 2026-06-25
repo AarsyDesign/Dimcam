@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-import '../../core/constants/app_dimens.dart';
-import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_text_styles.dart';
-import '../../core/widgets/ornament/flower_decoration.dart';
-import '../../core/widgets/ornament/sparkle_field.dart';
+import '../../constants/app_dimens.dart';
+import '../../theme/app_colors.dart';
+import '../../theme/app_text_styles.dart';
+import '../ornament/flower_decoration.dart';
+import '../ornament/sparkle_field.dart';
 
 /// 🎀 Header layar fitur dengan gradient pink + sparkle + judul manis.
 class FeatureHeader extends StatelessWidget {

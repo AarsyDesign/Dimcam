@@ -5,15 +5,19 @@ import '../../core/constants/app_dimens.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../providers/dashboard_provider.dart';
+import '../../providers/debt_provider.dart';
 import '../../providers/stock_provider.dart';
 import '../../providers/transaction_provider.dart';
 import '../dashboard/dashboard_screen.dart';
 import '../hpp/hpp_screen.dart';
+import '../hutang/hutang_screen.dart';
 import '../laporan/laporan_screen.dart';
+import '../pelanggan/pelanggan_screen.dart';
+import '../pengaturan/pengaturan_screen.dart';
 import '../penjualan/penjualan_screen.dart';
+import '../produksi/produksi_screen.dart';
 import '../stok/stok_screen.dart';
 
-/// 🏠 Cangkang navigasi utama dengan 5 menu bottom navigation.
 class MainNavigation extends StatefulWidget {
   const MainNavigation({super.key});
 
@@ -23,49 +27,77 @@ class MainNavigation extends StatefulWidget {
 
 class _MainNavigationState extends State<MainNavigation> {
   int _index = 0;
+  final _scrollController = ScrollController();
 
   static const List<_NavTab> _tabs = [
     _NavTab(icon: Icons.home_rounded, label: 'Dashboard', screen: DashboardScreen()),
     _NavTab(icon: Icons.sell_rounded, label: 'Penjualan', screen: PenjualanScreen()),
+    _NavTab(icon: Icons.factory_rounded, label: 'Produksi', screen: ProduksiScreen()),
+    _NavTab(icon: Icons.people_rounded, label: 'Pelanggan', screen: PelangganScreen()),
+    _NavTab(icon: Icons.receipt_long_rounded, label: 'Hutang', screen: HutangScreen()),
     _NavTab(icon: Icons.calculate_rounded, label: 'HPP', screen: HppScreen()),
     _NavTab(icon: Icons.inventory_2_rounded, label: 'Stok', screen: StokScreen()),
     _NavTab(icon: Icons.bar_chart_rounded, label: 'Laporan', screen: LaporanScreen()),
+    _NavTab(icon: Icons.settings_rounded, label: 'Pengaturan', screen: PengaturanScreen()),
   ];
 
   @override
   void initState() {
     super.initState();
-    // Hitung ringkasan dashboard setelah frame pertama.
     WidgetsBinding.instance.addPostFrameCallback((_) => _refreshDashboard());
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   void _refreshDashboard() {
     final tx = context.read<TransactionProvider>();
     final stock = context.read<StockProvider>();
-    context.read<DashboardProvider>().recompute(transactions: tx, stocks: stock);
+    final debts = context.read<DebtProvider>();
+    context.read<DashboardProvider>().recompute(transactions: tx, stocks: stock, debts: debts);
   }
 
   void _onTap(int i) {
     setState(() => _index = i);
-    // Dashboard perlu recompute tiap kali dibuka.
     if (i == 0) _refreshDashboard();
+    _scrollToTab(i);
+  }
+
+  void _scrollToTab(int index) {
+    const width = 72.0;
+    final target = (index * width) - (MediaQuery.of(context).size.width / 2 - width);
+    _scrollController.animateTo(
+      target.clamp(0, _scrollController.position.maxScrollExtent),
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOutCubic,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bgColor = isDark ? const Color(0xFF1E1E2E) : AppColors.cream;
+    final navBg = isDark ? const Color(0xFF252535) : AppColors.white;
+    final navShadow = isDark
+        ? const Color(0xFF000000).withValues(alpha: 0.3)
+        : AppColors.pinkDeep.withValues(alpha: 0.1);
+
     return Scaffold(
-      backgroundColor: AppColors.cream,
+      backgroundColor: bgColor,
       body: IndexedStack(
         index: _index,
         children: _tabs.map((t) => t.screen).toList(),
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: AppColors.white,
+          color: navBg,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(AppDimens.radiusXxl)),
           boxShadow: [
             BoxShadow(
-              color: AppColors.pinkDeep.withValues(alpha: 0.1),
+              color: navShadow,
               blurRadius: 18,
               offset: const Offset(0, -4),
             ),
@@ -73,11 +105,14 @@ class _MainNavigationState extends State<MainNavigation> {
         ),
         child: SafeArea(
           top: false,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: AppDimens.sm, horizontal: AppDimens.sm),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: List.generate(_tabs.length, (i) {
+          child: SizedBox(
+            height: 72,
+            child: ListView.builder(
+              controller: _scrollController,
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+              itemCount: _tabs.length,
+              itemBuilder: (context, i) {
                 final tab = _tabs[i];
                 final selected = i == _index;
                 return _NavButton(
@@ -86,7 +121,7 @@ class _MainNavigationState extends State<MainNavigation> {
                   selected: selected,
                   onTap: () => _onTap(i),
                 );
-              }),
+              },
             ),
           ),
         ),
@@ -117,18 +152,20 @@ class _NavButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final activeBg = isDark ? AppColors.pinkDeep.withValues(alpha: 0.25) : AppColors.pinkSoft;
+    const activeColor = AppColors.pinkDeep;
+    final inactiveColor = isDark ? const Color(0xFF9E8E93) : AppColors.textMuted;
+
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 250),
         curve: Curves.easeOutCubic,
-        padding: EdgeInsets.symmetric(
-          horizontal: selected ? AppDimens.md : AppDimens.sm,
-          vertical: AppDimens.xs + 2,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: selected ? AppColors.pinkSoft : Colors.transparent,
+          color: selected ? activeBg : Colors.transparent,
           borderRadius: BorderRadius.circular(AppDimens.radiusFull),
         ),
         child: Column(
@@ -137,13 +174,13 @@ class _NavButton extends StatelessWidget {
             Icon(
               icon,
               size: AppDimens.iconMd - 2,
-              color: selected ? AppColors.pinkDeep : AppColors.textMuted,
+              color: selected ? activeColor : inactiveColor,
             ),
             const SizedBox(height: 3),
             Text(
               label,
               style: AppTextStyles.caption.copyWith(
-                color: selected ? AppColors.pinkDeep : AppColors.textMuted,
+                color: selected ? activeColor : inactiveColor,
                 fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
                 fontSize: 10.5,
               ),

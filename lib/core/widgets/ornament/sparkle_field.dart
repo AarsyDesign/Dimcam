@@ -110,7 +110,7 @@ class _AnimatedSparklePainter extends CustomPainter {
 
   void _drawSparkle(Canvas canvas, Paint paint, Offset center, double r, double rotation) {
     canvas.save();
-    canvas.translate(center);
+    canvas.translate(center.dx, center.dy);
     canvas.rotate(rotation);
     final Path path = Path();
     const int points = 4;

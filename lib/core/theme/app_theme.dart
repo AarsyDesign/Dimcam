@@ -5,7 +5,7 @@ import '../constants/app_dimens.dart';
 import 'app_colors.dart';
 import 'app_text_styles.dart';
 
-/// 🎀 Tema Material 3 Dimsumia Manager.
+/// 🎀 Tema Material 3 Dimsumia Manager — Light & Dark.
 class AppTheme {
   AppTheme._();
 
@@ -20,35 +20,68 @@ class AppTheme {
       onSurface: AppColors.textDark,
     );
 
+    return _baseTheme(scheme, Brightness.light).copyWith(
+      scaffoldBackgroundColor: AppColors.cream,
+      appBarTheme: _baseAppBar().copyWith(
+        systemOverlayStyle: SystemUiLight.pink,
+      ),
+    );
+  }
+
+  static ThemeData get dark {
+    final ColorScheme scheme = ColorScheme.fromSeed(
+      seedColor: AppColors.seed,
+      brightness: Brightness.dark,
+      primary: AppColors.pinkAccent,
+      secondary: AppColors.lavender,
+      surface: const Color(0xFF1E1E2E),
+      onPrimary: AppColors.white,
+      onSurface: const Color(0xFFE8D5DA),
+    );
+
+    return _baseTheme(scheme, Brightness.dark).copyWith(
+      scaffoldBackgroundColor: const Color(0xFF16161E),
+      appBarTheme: _baseAppBar().copyWith(
+        systemOverlayStyle: SystemUiDark.pink,
+      ),
+    );
+  }
+
+  static ThemeData _baseTheme(ColorScheme scheme, Brightness brightness) {
+    final bool isDark = brightness == Brightness.dark;
+    final Color pinkSoft = isDark ? const Color(0xFF3D2A36) : AppColors.pinkSoft;
+    final Color pinkLight = isDark ? const Color(0xFF2E1F2A) : AppColors.pinkLight;
+    final Color textMuted = isDark ? const Color(0xFF9E8E93) : AppColors.textMuted;
+    final Color cardColor = isDark ? const Color(0xFF252535) : AppColors.white;
+    final Color dividerColor = isDark ? const Color(0xFF3A3A4A) : AppColors.pinkSoft;
+
     return ThemeData(
       useMaterial3: true,
       colorScheme: scheme,
-      scaffoldBackgroundColor: AppColors.cream,
+      brightness: brightness,
       splashFactory: InkSparkle.splashFactory,
       visualDensity: VisualDensity.adaptivePlatformDensity,
+      scaffoldBackgroundColor: isDark ? const Color(0xFF16161E) : AppColors.cream,
 
-      // ---- App bar ----
       appBarTheme: AppBarTheme(
         backgroundColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: false,
-        systemOverlayStyle: SystemUiLight.pink,
-        titleTextStyle: AppTextStyles.h2,
+        titleTextStyle: AppTextStyles.h2.copyWith(color: AppColors.white),
         iconTheme: const IconThemeData(color: AppColors.white, size: AppDimens.iconMd),
       ),
 
-      // ---- Card ----
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         elevation: 0,
-        color: AppColors.white,
+        color: cardColor,
+        surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppDimens.radiusXl),
         ),
         margin: EdgeInsets.zero,
       ),
 
-      // ---- Elevated button ----
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.pinkAccent,
@@ -63,7 +96,6 @@ class AppTheme {
         ),
       ),
 
-      // ---- Text button ----
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: AppColors.pinkDeep,
@@ -71,11 +103,10 @@ class AppTheme {
         ),
       ),
 
-      // ---- Outlined button ----
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: AppColors.pinkDeep,
-          side: const BorderSide(color: AppColors.pinkAccent, width: 1.5),
+          side: BorderSide(color: isDark ? AppColors.pinkDeep : AppColors.pinkAccent, width: 1.5),
           minimumSize: const Size.fromHeight(AppDimens.buttonHeight),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppDimens.radiusFull),
@@ -84,12 +115,11 @@ class AppTheme {
         ),
       ),
 
-      // ---- Input ----
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: AppColors.pinkLight,
+        fillColor: pinkLight,
         contentPadding: const EdgeInsets.symmetric(horizontal: AppDimens.lg, vertical: AppDimens.lg),
-        hintStyle: AppTextStyles.body.copyWith(color: AppColors.textMuted),
+        hintStyle: AppTextStyles.body.copyWith(color: textMuted),
         labelStyle: AppTextStyles.bodyBold.copyWith(color: AppColors.pinkDeep),
         prefixIconColor: AppColors.pinkAccent,
         suffixIconColor: AppColors.pinkAccent,
@@ -99,7 +129,7 @@ class AppTheme {
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppDimens.radiusLg),
-          borderSide: const BorderSide(color: AppColors.pinkSoft, width: 1.5),
+          borderSide: BorderSide(color: pinkSoft, width: 1.5),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppDimens.radiusLg),
@@ -115,7 +145,6 @@ class AppTheme {
         ),
       ),
 
-      // ---- FAB ----
       floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: AppColors.pinkAccent,
         foregroundColor: AppColors.white,
@@ -126,9 +155,8 @@ class AppTheme {
         extendedPadding: const EdgeInsets.symmetric(horizontal: AppDimens.xxl, vertical: AppDimens.lg),
       ),
 
-      // ---- Chip ----
       chipTheme: ChipThemeData(
-        backgroundColor: AppColors.pinkSoft,
+        backgroundColor: pinkSoft,
         selectedColor: AppColors.pinkAccent,
         labelStyle: AppTextStyles.bodySmall.copyWith(color: AppColors.pinkDeep, fontWeight: FontWeight.w700),
         side: BorderSide.none,
@@ -138,43 +166,21 @@ class AppTheme {
         padding: const EdgeInsets.symmetric(horizontal: AppDimens.md, vertical: AppDimens.xs),
       ),
 
-      // ---- Navigation bar ----
-      navigationBarTheme: NavigationBarThemeData(
-        backgroundColor: AppColors.white,
-        elevation: 0,
-        height: AppDimens.navBarHeight,
-        indicatorColor: AppColors.pinkSoft,
-        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-        labelTextStyle: WidgetStatePropertyAll(
-          AppTextStyles.caption.copyWith(fontWeight: FontWeight.w700),
-        ),
-        iconTheme: WidgetStateProperty.resolveWith((states) {
-          final selected = states.contains(WidgetState.selected);
-          return IconThemeData(
-            color: selected ? AppColors.pinkDeep : AppColors.textMuted,
-            size: AppDimens.iconMd,
-          );
-        }),
-      ),
-
-      // ---- Divider ----
-      dividerTheme: const DividerThemeData(
-        color: AppColors.pinkSoft,
+      dividerTheme: DividerThemeData(
+        color: dividerColor,
         thickness: 1,
         space: 1,
       ),
 
-      // ---- Progress ----
-      progressIndicatorTheme: const ProgressIndicatorThemeData(
+      progressIndicatorTheme: ProgressIndicatorThemeData(
         color: AppColors.pinkAccent,
-        linearTrackColor: AppColors.pinkSoft,
+        linearTrackColor: pinkSoft,
         linearMinHeight: 8,
-        borderRadius: BorderRadius.all(Radius.circular(AppDimens.radiusFull)),
+        borderRadius: const BorderRadius.all(Radius.circular(AppDimens.radiusFull)),
       ),
 
-      // ---- Snack bar ----
       snackBarTheme: SnackBarThemeData(
-        backgroundColor: AppColors.textDark,
+        backgroundColor: isDark ? const Color(0xFF3A3A4A) : AppColors.textDark,
         contentTextStyle: AppTextStyles.body.copyWith(color: AppColors.white, fontWeight: FontWeight.w600),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
@@ -182,9 +188,8 @@ class AppTheme {
         ),
       ),
 
-      // ---- Bottom sheet ----
       bottomSheetTheme: BottomSheetThemeData(
-        backgroundColor: AppColors.white,
+        backgroundColor: cardColor,
         surfaceTintColor: Colors.transparent,
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(AppDimens.radiusXxl)),
@@ -192,9 +197,22 @@ class AppTheme {
       ),
     );
   }
+
+  static AppBarTheme _baseAppBar() => const AppBarTheme(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        centerTitle: false,
+        titleTextStyle: TextStyle(
+          fontFamily: 'Baloo2',
+          fontSize: 22,
+          fontWeight: FontWeight.w700,
+          color: AppColors.white,
+        ),
+        iconTheme: IconThemeData(color: AppColors.white, size: AppDimens.iconMd),
+      );
 }
 
-/// Helper overlay style.
 class SystemUiLight {
   static const SystemUiOverlayStyle pink = SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
@@ -202,5 +220,15 @@ class SystemUiLight {
     statusBarBrightness: Brightness.light,
     systemNavigationBarColor: AppColors.white,
     systemNavigationBarIconBrightness: Brightness.dark,
+  );
+}
+
+class SystemUiDark {
+  static const SystemUiOverlayStyle pink = SystemUiOverlayStyle(
+    statusBarColor: Colors.transparent,
+    statusBarIconBrightness: Brightness.light,
+    statusBarBrightness: Brightness.dark,
+    systemNavigationBarColor: Color(0xFF16161E),
+    systemNavigationBarIconBrightness: Brightness.light,
   );
 }

@@ -27,7 +27,7 @@ class SectionTitle extends StatelessWidget {
         if (icon != null) ...[
           Container(
             padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: AppColors.pinkSoft,
               shape: BoxShape.circle,
             ),

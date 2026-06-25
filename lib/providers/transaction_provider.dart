@@ -79,11 +79,14 @@ class TransactionProvider extends ChangeNotifier {
   Future<int> totalSalesToday() async {
     final all = await _db.getTransactions();
     final now = DateTime.now();
-    return all
-        .where((t) =>
-            t.dateTime.year == now.year &&
-            t.dateTime.month == now.month &&
-            t.dateTime.day == now.day)
-        .fold(0, (s, t) => s + t.totalPrice);
+    int sum = 0;
+    for (final t in all) {
+      if (t.dateTime.year == now.year &&
+          t.dateTime.month == now.month &&
+          t.dateTime.day == now.day) {
+        sum += t.totalPrice;
+      }
+    }
+    return sum;
   }
 }

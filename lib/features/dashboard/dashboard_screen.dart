@@ -30,6 +30,7 @@ class DashboardScreen extends StatelessWidget {
           onRefresh: () async => provider.recompute(
             transactions: context.read(),
             stocks: context.read(),
+            debts: context.read(),
           ),
           child: CustomScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
@@ -38,12 +39,14 @@ class DashboardScreen extends StatelessWidget {
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(AppDimens.lg, AppDimens.lg, AppDimens.lg, AppDimens.xxxl),
                 sliver: SliverList(
-                  delegate: SliverChildList.fixed([
+                  delegate: SliverChildListDelegate([
                     _StatsRow(summary: summary),
                     const SizedBox(height: AppDimens.xxl),
                     _BestSellerCard(summary: summary),
                     const SizedBox(height: AppDimens.xxl),
                     _StockSummaryCard(summary: summary),
+                    const SizedBox(height: AppDimens.xxl),
+                    _DebtSummaryCard(summary: summary),
                     const SizedBox(height: AppDimens.xxl),
                     _WeeklyMiniChart(summary: summary),
                   ]),
@@ -142,7 +145,7 @@ class _StatsRow extends StatelessWidget {
       builder: (context, constraints) {
         // Grid adaptif: 2 kolom utama + 1 di bawah, atau 3 kolom pada layar lebar.
         final wide = constraints.maxWidth > 380;
-        final double gap = AppDimens.md;
+        const double gap = AppDimens.md;
 
         List<Widget> main = [
           Expanded(
@@ -154,7 +157,7 @@ class _StatsRow extends StatelessWidget {
               gradient: AppColors.headerGradient,
             ),
           ),
-          SizedBox(width: gap),
+          const SizedBox(width: gap),
           Expanded(
             child: StatCard(
               icon: Icons.savings_rounded,
@@ -180,7 +183,7 @@ class _StatsRow extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               ...main,
-              SizedBox(width: gap),
+              const SizedBox(width: gap),
               Expanded(child: transactionCard),
             ],
           );
@@ -350,6 +353,96 @@ class _StockSummaryCard extends StatelessWidget {
   }
 }
 
+// ---------------- DEBT SUMMARY ----------------
+class _DebtSummaryCard extends StatelessWidget {
+  const _DebtSummaryCard({required this.summary});
+  final DashboardSummary? summary;
+
+  @override
+  Widget build(BuildContext context) {
+    final piutang = summary?.totalPiutang ?? 0;
+    final jatuhTempo = summary?.piutangJatuhTempo ?? 0;
+    final lunas = summary?.piutangLunas ?? 0;
+
+    if (piutang == 0 && jatuhTempo == 0 && lunas == 0) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SectionTitle(
+          title: 'Ringkasan Piutang',
+          icon: Icons.receipt_long_rounded,
+          actionLabel: '${(piutang + lunas) > 0 ? ((piutang / ((piutang + lunas).toDouble()) * 100)).round() : 0}% piutang',
+        ),
+        const SizedBox(height: AppDimens.md),
+        AppCard(
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [AppColors.pinkLight, AppColors.ivory],
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: _DebtItem(
+                  icon: Icons.receipt_long_rounded,
+                  label: 'Piutang',
+                  value: Format.rupiahShort(piutang),
+                  color: AppColors.coral,
+                ),
+              ),
+              Container(width: 1, height: 40, color: AppColors.pinkSoft),
+              Expanded(
+                child: _DebtItem(
+                  icon: Icons.warning_rounded,
+                  label: 'Jatuh Tempo',
+                  value: Format.rupiahShort(jatuhTempo),
+                  color: AppColors.amber,
+                ),
+              ),
+              Container(width: 1, height: 40, color: AppColors.pinkSoft),
+              Expanded(
+                child: _DebtItem(
+                  icon: Icons.check_circle_rounded,
+                  label: 'Lunas',
+                  value: Format.rupiahShort(lunas),
+                  color: AppColors.mintDeep,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _DebtItem extends StatelessWidget {
+  const _DebtItem({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  final IconData icon;
+  final String label;
+  final String value;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Icon(icon, color: color, size: 22),
+        const SizedBox(height: 4),
+        Text(label, style: AppTextStyles.caption, textAlign: TextAlign.center),
+        Text(value, style: AppTextStyles.h3.copyWith(color: color, fontSize: 15)),
+      ],
+    );
+  }
+}
+
 // ---------------- WEEKLY MINI CHART ----------------
 class _WeeklyMiniChart extends StatelessWidget {
   const _WeeklyMiniChart({required this.summary});
@@ -363,7 +456,7 @@ class _WeeklyMiniChart extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SectionTitle(title: 'Tren 7 Hari', icon: Icons.trending_up_rounded),
+        const SectionTitle(title: 'Tren 7 Hari', icon: Icons.trending_up_rounded),
         const SizedBox(height: AppDimens.md),
         AppCard(
           child: Column(
