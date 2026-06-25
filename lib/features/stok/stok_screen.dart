@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import '../../core/constants/app_dimens.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
-import '../../core/utils/format.dart' as fmt;
+import '../../core/utils/format.dart';
 import '../../core/widgets/common/app_card.dart';
 import '../../core/widgets/common/empty_state.dart';
 import '../../core/widgets/common/feature_header.dart';
@@ -46,15 +46,13 @@ class _StokScreenState extends State<StokScreen> with SingleTickerProviderStateM
   }
 
   void _showActionMenu() {
-    final bahanProvider = context.read<BahanProvider>();
-    final rootNavigator = Navigator.of(context);
     showModalBottomSheet(
       context: context,
       backgroundColor: AppColors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppDimens.radiusXxl)),
       ),
-      builder: (sheetContext) => Padding(
+      builder: (context) => Padding(
         padding: const EdgeInsets.all(AppDimens.xl),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -76,11 +74,14 @@ class _StokScreenState extends State<StokScreen> with SingleTickerProviderStateM
               subtitle: 'Tambah stok dari pembelian',
               color: AppColors.pinkAccent,
               onTap: () {
-                Navigator.pop(sheetContext);
-                rootNavigator.push(
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
                   MaterialPageRoute(builder: (_) => const PurchaseFormScreen()),
                 ).then((_) {
-                  if (mounted) bahanProvider.refresh();
+                  if (mounted) {
+                    context.read<BahanProvider>().refresh();
+                  }
                 });
               },
             ),
@@ -91,11 +92,14 @@ class _StokScreenState extends State<StokScreen> with SingleTickerProviderStateM
               subtitle: 'Kurangi stok untuk produksi',
               color: AppColors.coral,
               onTap: () {
-                Navigator.pop(sheetContext);
-                rootNavigator.push(
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
                   MaterialPageRoute(builder: (_) => const ProductionFormScreen()),
                 ).then((_) {
-                  if (mounted) bahanProvider.refresh();
+                  if (mounted) {
+                    context.read<BahanProvider>().refresh();
+                  }
                 });
               },
             ),
@@ -273,8 +277,11 @@ class _BahanCard extends StatelessWidget {
     final status = bahan.status;
     final statusColor = _getStatusColor(status);
     final statusLabel = _getStatusLabel(status);
-    final double stockPercent = bahan.minStock > 0
-        ? (bahan.stock / bahan.minStock).clamp(0.0, 1.0).toDouble()
+    final double stockPercent =
+    bahan.minStock > 0
+        ? (bahan.stock / bahan.minStock)
+              .clamp(0.0, 1.0)
+              .toDouble()
         : 1.0;
 
     return AppCard(
@@ -321,7 +328,7 @@ class _BahanCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    fmt.Format.rupiah(bahan.buyPrice),
+                    Format.rupiah(bahan.buyPrice),
                     style: AppTextStyles.caption,
                   ),
                 ],
@@ -341,10 +348,10 @@ class _BahanCard extends StatelessWidget {
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(AppDimens.radiusFull),
                             child: LinearProgressIndicator(
-                              value: stockPercent.toDouble(),
-                              backgroundColor: AppColors.pinkSoft,
-                              color: statusColor,
-                              minHeight: 6,
+  value: stockPercent.toDouble(),
+  backgroundColor: AppColors.pinkSoft,
+  color: statusColor,
+  minHeight: 6,
                             ),
                           ),
                         ),
@@ -395,4 +402,3 @@ class _BahanCard extends StatelessWidget {
     };
   }
 }
-

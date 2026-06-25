@@ -82,7 +82,7 @@ class _PengaturanScreenState extends State<PengaturanScreen> {
   }
 
   Future<void> _restoreFromExternal() async {
-    final result = await FilePicker.platform.pickFiles(
+    final result = await FilePicker.pickFiles(
       type: FileType.any,
       allowMultiple: false,
     );
