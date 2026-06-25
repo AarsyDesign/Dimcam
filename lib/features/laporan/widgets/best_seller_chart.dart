@@ -144,4 +144,3 @@ class _BestSellerItem extends StatelessWidget {
     }
   }
 }
-

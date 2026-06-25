@@ -53,9 +53,8 @@ class _ProductionFormScreenState extends State<ProductionFormScreen> {
 
   Future<void> _loadRequirements(int productId) async {
     final db = DatabaseHelper.instance;
-    final bahanProvider = context.read<BahanProvider>();
     final resep = await db.getResep(productId);
-    final bahans = bahanProvider.items;
+    final bahans = context.read<BahanProvider>().items;
 
     final requirements = <_BahanRequirement>[];
     for (final r in resep) {
@@ -114,18 +113,13 @@ class _ProductionFormScreenState extends State<ProductionFormScreen> {
     }
 
     // Konfirmasi produksi
-    final productionProvider = context.read<ProductionProvider>();
-    final bahanProvider = context.read<BahanProvider>();
-    final navigator = Navigator.of(context);
-    final messenger = ScaffoldMessenger.of(context);
     final confirm = await _showConfirmDialog();
     if (confirm != true) return;
-    if (!mounted) return;
 
     setState(() => _loading = true);
 
     try {
-      await productionProvider.process(
+      await context.read<ProductionProvider>().process(
             _selectedProduct!.id,
             _selectedProduct!.name,
             _selectedProduct!.emoji,
@@ -135,13 +129,11 @@ class _ProductionFormScreenState extends State<ProductionFormScreen> {
 
       // Refresh bahan provider
       if (mounted) {
-        await bahanProvider.refresh();
-        if (mounted) {
-          navigator.pop(true);
-          messenger.showSnackBar(
-            SnackBar(content: Text('Produksi $qty ${_selectedProduct!.name} berhasil')),
-          );
-        }
+        await context.read<BahanProvider>().refresh();
+        Navigator.pop(context, true);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Produksi $qty ${_selectedProduct!.name} berhasil')),
+        );
       }
     } catch (e) {
       if (mounted) {
@@ -637,4 +629,3 @@ class _BahanRequirement {
   final Bahan bahan;
   final double qtyPerUnit;
 }
-
