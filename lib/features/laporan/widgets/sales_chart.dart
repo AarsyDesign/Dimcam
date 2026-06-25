@@ -141,4 +141,3 @@ class SalesChart extends StatelessWidget {
     return DateFormat('d/M', 'id_ID').format(date);
   }
 }
-
