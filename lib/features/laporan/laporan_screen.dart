@@ -467,4 +467,3 @@ class _BestSellerChart extends StatelessWidget {
     );
   }
 }
-

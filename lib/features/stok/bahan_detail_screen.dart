@@ -208,9 +208,7 @@ class _StockCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final statusColor = _getStatusColor(status);
     final statusLabel = _getStatusLabel(status);
-    final double stockPercent = bahan.minStock > 0
-        ? (bahan.stock / bahan.minStock).clamp(0.0, 1.5).toDouble()
-        : 1.0;
+    final double stockPercent = bahan.minStock > 0 ? (bahan.stock / bahan.minStock).clamp(0.0, 1.5).toDouble() : 1.0;
 
     return AppCard(
       child: Column(
@@ -242,7 +240,7 @@ class _StockCard extends StatelessWidget {
           ClipRRect(
             borderRadius: BorderRadius.circular(AppDimens.radiusFull),
             child: LinearProgressIndicator(
-              value: stockPercent,
+              value: stockPercent.toDouble(),
               backgroundColor: AppColors.pinkSoft,
               color: statusColor,
               minHeight: 12,
@@ -450,4 +448,3 @@ class _HistoryItem extends StatelessWidget {
     );
   }
 }
-

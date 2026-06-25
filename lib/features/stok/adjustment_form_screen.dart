@@ -74,7 +74,7 @@ class _AdjustmentFormScreenState extends State<AdjustmentFormScreen> {
     final bahan = widget.bahan;
     final qty = double.tryParse(_qtyController.text) ?? 0.0;
     final delta = _isAddition ? qty : -qty;
-    final newStock = (bahan.stock + delta).clamp(0.0, double.infinity).toDouble();
+    final double newStock = (bahan.stock + delta).clamp(0.0, double.infinity).toDouble();
 
     return Scaffold(
       backgroundColor: AppColors.cream,
@@ -113,7 +113,7 @@ class _AdjustmentFormScreenState extends State<AdjustmentFormScreen> {
             _SummaryCard(
               bahan: bahan,
               delta: delta,
-              newStock: newStock,
+              newStock: newStock.toDouble(),
             ),
             const SizedBox(height: AppDimens.xxl),
             PrimaryButton(
@@ -449,4 +449,3 @@ class _SummaryRow extends StatelessWidget {
     );
   }
 }
-

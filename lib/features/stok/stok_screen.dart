@@ -46,13 +46,15 @@ class _StokScreenState extends State<StokScreen> with SingleTickerProviderStateM
   }
 
   void _showActionMenu() {
+    final bahanProvider = context.read<BahanProvider>();
+    final rootNavigator = Navigator.of(context);
     showModalBottomSheet(
       context: context,
       backgroundColor: AppColors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppDimens.radiusXxl)),
       ),
-      builder: (context) => Padding(
+      builder: (sheetContext) => Padding(
         padding: const EdgeInsets.all(AppDimens.xl),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -74,13 +76,11 @@ class _StokScreenState extends State<StokScreen> with SingleTickerProviderStateM
               subtitle: 'Tambah stok dari pembelian',
               color: AppColors.pinkAccent,
               onTap: () {
-                final provider = context.read<BahanProvider>();
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
+                Navigator.pop(sheetContext);
+                rootNavigator.push(
                   MaterialPageRoute(builder: (_) => const PurchaseFormScreen()),
                 ).then((_) {
-                  if (mounted) provider.refresh();
+                  if (mounted) bahanProvider.refresh();
                 });
               },
             ),
@@ -91,13 +91,11 @@ class _StokScreenState extends State<StokScreen> with SingleTickerProviderStateM
               subtitle: 'Kurangi stok untuk produksi',
               color: AppColors.coral,
               onTap: () {
-                final provider = context.read<BahanProvider>();
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
+                Navigator.pop(sheetContext);
+                rootNavigator.push(
                   MaterialPageRoute(builder: (_) => const ProductionFormScreen()),
                 ).then((_) {
-                  if (mounted) provider.refresh();
+                  if (mounted) bahanProvider.refresh();
                 });
               },
             ),
@@ -343,7 +341,7 @@ class _BahanCard extends StatelessWidget {
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(AppDimens.radiusFull),
                             child: LinearProgressIndicator(
-                              value: stockPercent,
+                              value: stockPercent.toDouble(),
                               backgroundColor: AppColors.pinkSoft,
                               color: statusColor,
                               minHeight: 6,
