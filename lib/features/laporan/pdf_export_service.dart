@@ -1,5 +1,4 @@
 import 'package:flutter/services.dart';
-import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
@@ -35,7 +34,7 @@ class PdfExportService {
     const cWhite = PdfColor.fromInt(0xFFFFFEFD);
     const cLavender = PdfColor.fromInt(0xFFE6D7F5);
 
-    final dateFormat = DateFormat('d MMMM yyyy', 'id_ID');
+    String dateFormat(DateTime d) => Format.dateLongNoDay(d);
 
     pdf.addPage(
       pw.MultiPage(
@@ -52,7 +51,7 @@ class PdfExportService {
           pw.SizedBox(height: 32),
           pw.Center(
             child: pw.Text(
-              'Dicetak: ${dateFormat.format(DateTime.now())}',
+              'Dicetak: ${dateFormat(DateTime.now())}',
               style: pw.TextStyle(font: ttf, fontSize: 10, color: cMuted),
             ),
           ),
@@ -193,7 +192,7 @@ class PdfExportService {
     PdfColor pinkDeep,
     PdfColor text,
     PdfColor bg,
-    DateFormat df,
+    String Function(DateTime) df,
   ) {
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -217,7 +216,7 @@ class PdfExportService {
               return pw.TableRow(
                 decoration: const pw.BoxDecoration(),
                 children: [
-                  _cell(font, df.format(day.date), text),
+                  _cell(font, df(day.date), text),
                   _cell(font, Format.rupiah(day.sales), text),
                   _cell(font, Format.rupiah(day.cost), text),
                   _cell(font, Format.rupiah(day.profit), text),
@@ -239,8 +238,8 @@ class PdfExportService {
   }
 
   static String _getDateRangeText(ReportData report) {
-    final f = DateFormat('d MMMM yyyy', 'id_ID');
+    String f(DateTime d) => Format.dateLongNoDay(d);
     final end = report.endDate.subtract(const Duration(days: 1));
-    return '${f.format(report.startDate)} - ${f.format(end)}';
+    return '${f(report.startDate)} - ${f(end)}';
   }
 }

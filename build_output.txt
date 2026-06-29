@@ -1,0 +1,26 @@
+﻿Running Gradle task 'assembleDebug'...                          
+flutter : 
+At line:1 char:33
++ ... d "D:\Arsyad\Aplikasi Dimsum"; flutter build apk --debug 2>&1 | Out-F ...
++                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+FAILURE: Build failed with an exception.
+
+* Where:
+Build file 'D:\Arsyad\Aplikasi Dimsum\android\build.gradle.kts' line: 25
+
+* What went wrong:
+Cannot mutate the dependencies of configuration 'classpath' after the configuration was resolved. After a 
+configuration has been observed, it should not be modified.
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to generate a Build Scan (Powered by Develocity).
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 2s
+Running Gradle task 'assembleDebug'...                           2,924ms
+Gradle task assembleDebug failed with exit code 1

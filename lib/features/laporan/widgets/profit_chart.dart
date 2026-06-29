@@ -1,9 +1,9 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
+import '../../../core/utils/format.dart';
 import '../../../data/models/report.dart';
 
 class ProfitChart extends StatelessWidget {
@@ -95,7 +95,7 @@ class ProfitChart extends StatelessWidget {
             getTooltipItem: (group, groupIndex, rod, rodIndex) {
               final daily = data[groupIndex];
               return BarTooltipItem(
-                '${DateFormat('d MMM', 'id_ID').format(daily.date)}\n${_formatCurrency(daily.profit)}',
+                '${Format.dateShort(daily.date)}\n${_formatCurrency(daily.profit)}',
                 AppTextStyles.bodySmall.copyWith(
                   color: AppColors.white,
                   fontWeight: FontWeight.w700,
@@ -118,6 +118,6 @@ class ProfitChart extends StatelessWidget {
   }
 
   String _formatDate(DateTime date) {
-    return DateFormat('d/M', 'id_ID').format(date);
+    return '${date.day}/${date.month}';
   }
 }

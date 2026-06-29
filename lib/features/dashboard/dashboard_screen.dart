@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/constants/app_dimens.dart';
@@ -75,7 +74,7 @@ class _Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final today = DateFormat('EEEE, d MMMM yyyy', 'id_ID').format(DateTime.now());
+    final today = Format.dateLong(DateTime.now());
     return Container(
       decoration: const BoxDecoration(gradient: AppColors.headerGradient),
       child: SafeArea(
@@ -190,9 +189,9 @@ class _StatsRow extends StatelessWidget {
         }
         return Column(
           children: [
-            SizedBox(height: 80, child: Row(children: main)),
+            Row(children: main),
             const SizedBox(height: gap),
-            SizedBox(height: 80, child: transactionCard),
+            transactionCard,
           ],
         );
       },
@@ -500,7 +499,7 @@ class _WeeklyMiniChart extends StatelessWidget {
                             ),
                             const SizedBox(height: 6),
                             Text(
-                              DateFormat('E', 'id_ID').format(d.date).substring(0, 1),
+                              Format.dayAbbr(d.date),
                               style: AppTextStyles.caption.copyWith(
                                 color: isToday ? AppColors.pinkDeep : AppColors.textMuted,
                                 fontWeight: FontWeight.w700,

@@ -1,0 +1,10 @@
+Analyzing Aplikasi Dimsum...                                    
+
+   info - Don't use 'BuildContext's across async gaps. Try rewriting the code to not use the 'BuildContext', or guard the use with a 'mounted' check - lib\features\produksi\production_form_screen.dart:57:20 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps. Try rewriting the code to not use the 'BuildContext', or guard the use with a 'mounted' check - lib\features\produksi\production_form_screen.dart:122:13 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps. Try rewriting the code to not use the 'BuildContext', or guard the use with a 'mounted' check - lib\features\produksi\production_form_screen.dart:133:23 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps. Try rewriting the code to not use the 'BuildContext', or guard the use with a 'mounted' check - lib\features\produksi\production_form_screen.dart:134:30 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps. Try rewriting the code to not use the 'BuildContext', or guard the use with a 'mounted' check - lib\features\stok\stok_screen.dart:83:21 - use_build_context_synchronously
+   info - Don't use 'BuildContext's across async gaps. Try rewriting the code to not use the 'BuildContext', or guard the use with a 'mounted' check - lib\features\stok\stok_screen.dart:101:21 - use_build_context_synchronously
+
+6 issues found. (ran in 4.4s)

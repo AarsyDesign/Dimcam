@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/constants/app_dimens.dart';
@@ -271,7 +270,7 @@ class _ProductionCard extends StatelessWidget {
               const Icon(Icons.access_time_rounded, size: 14, color: AppColors.textMuted),
               const SizedBox(width: 4),
               Text(
-                DateFormat('EEEE, d MMM yyyy · HH:mm', 'id_ID').format(production.dateTime),
+                Format.dateTime(production.dateTime),
                 style: AppTextStyles.caption,
               ),
               const Spacer(),

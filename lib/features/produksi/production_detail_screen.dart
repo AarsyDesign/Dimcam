@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/constants/app_dimens.dart';
@@ -246,13 +245,13 @@ class _InfoCard extends StatelessWidget {
           _InfoRow(
             icon: Icons.calendar_today_rounded,
             label: 'Tanggal',
-            value: DateFormat('EEEE, d MMMM yyyy', 'id_ID').format(production.dateTime),
+            value: Format.dateLong(production.dateTime),
           ),
           const SizedBox(height: AppDimens.md),
           _InfoRow(
             icon: Icons.access_time_rounded,
             label: 'Waktu',
-            value: DateFormat('HH:mm', 'id_ID').format(production.dateTime),
+            value: '${production.dateTime.hour.toString().padLeft(2, '0')}:${production.dateTime.minute.toString().padLeft(2, '0')}',
           ),
           if (production.note != null && production.note!.isNotEmpty) ...[
             const SizedBox(height: AppDimens.md),

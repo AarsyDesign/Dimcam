@@ -1,7 +1,8 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+
+import '../../core/utils/format.dart';
 
 import '../../core/constants/app_dimens.dart';
 import '../../core/services/backup_service.dart';
@@ -60,7 +61,7 @@ class _PengaturanScreenState extends State<PengaturanScreen> {
   Future<void> _restoreFromLocal(BackupInfo backup) async {
     final confirm = await _showConfirm(
       'Restore Data',
-      'Database akan dikembalikan ke kondisi ${DateFormat('d MMM yyyy HH:mm', 'id_ID').format(backup.dateTime)}. Data saat ini akan hilang. Lanjutkan?',
+      'Database akan dikembalikan ke kondisi ${Format.dateMediumTime(backup.dateTime)}. Data saat ini akan hilang. Lanjutkan?',
     );
     if (confirm != true) return;
 
@@ -398,7 +399,7 @@ class _BackupItem extends StatelessWidget {
               Text(backup.name, style: AppTextStyles.bodyBold, maxLines: 1, overflow: TextOverflow.ellipsis),
               const SizedBox(height: 2),
               Text(
-                '${backup.sizeLabel} • ${DateFormat('d MMM yyyy HH:mm', 'id_ID').format(backup.dateTime)}',
+                '${backup.sizeLabel} • ${Format.dateMediumTime(backup.dateTime)}',
                 style: AppTextStyles.caption,
               ),
             ],

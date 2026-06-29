@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/constants/app_dimens.dart';
@@ -202,16 +201,16 @@ class _DateNavigator extends StatelessWidget {
     final date = provider.selectedDate;
     switch (provider.period) {
       case ReportPeriod.daily:
-        return DateFormat('EEEE, d MMMM yyyy', 'id_ID').format(date);
+        return Format.dateLong(date);
       case ReportPeriod.weekly:
         final weekday = date.weekday;
         final start = date.subtract(Duration(days: weekday - 1));
         final end = start.add(const Duration(days: 6));
-        return '${DateFormat('d MMM', 'id_ID').format(start)} - ${DateFormat('d MMM yyyy', 'id_ID').format(end)}';
+        return '${Format.dateShort(start)} - ${Format.dateMedium(end)}';
       case ReportPeriod.monthly:
-        return DateFormat('MMMM yyyy', 'id_ID').format(date);
+        return Format.monthYear(date);
       case ReportPeriod.yearly:
-        return DateFormat('yyyy', 'id_ID').format(date);
+        return Format.yearOnly(date);
     }
   }
 

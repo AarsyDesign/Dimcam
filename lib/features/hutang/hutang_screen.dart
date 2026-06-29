@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/constants/app_dimens.dart';
@@ -456,7 +455,7 @@ class _DebtCard extends StatelessWidget {
               const Icon(Icons.access_time_rounded, size: 14, color: AppColors.textMuted),
               const SizedBox(width: 4),
               Text(
-                DateFormat('EEEE, d MMM yyyy', 'id_ID').format(debt.dateTime),
+                Format.dateMedium(debt.dateTime),
                 style: AppTextStyles.caption,
               ),
               if (debt.note != null && debt.note!.isNotEmpty) ...[
@@ -550,7 +549,7 @@ class _DebtDetailSheet extends StatelessWidget {
           Row(
             children: [
               _DetailItem(label: 'Nominal', value: Format.rupiah(debt.amount)),
-              _DetailItem(label: 'Tanggal', value: DateFormat('d MMM yyyy', 'id_ID').format(debt.dateTime)),
+              _DetailItem(label: 'Tanggal', value: Format.dateMedium(debt.dateTime)),
               _DetailItem(
                 label: 'Status',
                 value: debt.isOverdue ? 'Jatuh Tempo' : debt.statusLabel,

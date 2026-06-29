@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/constants/app_dimens.dart';
@@ -455,7 +454,7 @@ class _DateTimeSelector extends StatelessWidget {
                       prefixIcon: Icon(Icons.calendar_today_rounded),
                     ),
                     child: Text(
-                      DateFormat('d MMM yyyy', 'id_ID').format(date),
+                      Format.dateMedium(date),
                       style: AppTextStyles.body,
                     ),
                   ),
