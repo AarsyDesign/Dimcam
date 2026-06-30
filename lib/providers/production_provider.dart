@@ -4,16 +4,36 @@ import '../data/database/database_helper.dart';
 import '../data/models/production.dart';
 
 class ProductionProvider extends ChangeNotifier {
-  ProductionProvider() {
-    _load();
+  ProductionProvider({bool autoLoad = true}) {
+    if (autoLoad) _load();
   }
 
   final DatabaseHelper _db = DatabaseHelper.instance;
 
   List<Production> _items = [];
   List<Production> get items => _items;
+
+  @visibleForTesting
+  set items(List<Production> value) => _items = value;
   bool _loading = true;
   bool get loading => _loading;
+
+  String _searchQuery = '';
+  String get searchQuery => _searchQuery;
+
+  void setSearchQuery(String query) {
+    _searchQuery = query;
+    notifyListeners();
+  }
+
+  List<Production> get filteredItems {
+    if (_searchQuery.isEmpty) return _items;
+    final q = _searchQuery.toLowerCase();
+    return _items.where((p) =>
+      p.productName.toLowerCase().contains(q) ||
+      (p.note?.toLowerCase().contains(q) ?? false)
+    ).toList();
+  }
 
   Future<void> _load() async {
     try {

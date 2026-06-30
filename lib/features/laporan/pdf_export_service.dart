@@ -1,9 +1,9 @@
-import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 
 import '../../core/utils/format.dart';
+import '../../data/database/database_helper.dart';
 import '../../data/models/report.dart';
 
 class PdfExportService {
@@ -17,14 +17,226 @@ class PdfExportService {
     );
   }
 
+  static Future<void> generateStokPdf() async {
+    final bahans = await DatabaseHelper.instance.getBahans();
+    if (bahans.isEmpty) return;
+
+    final pdf = pw.Document();
+    final ttf = pw.Font.helvetica();
+    final ttfBold = pw.Font.helveticaBold();
+
+    const cPink = PdfColor.fromInt(0xFFF472A8);
+    const cPinkDeep = PdfColor.fromInt(0xFFE8557E);
+    const cText = PdfColor.fromInt(0xFF4A2F36);
+    const cMuted = PdfColor.fromInt(0xFFB89AA0);
+    const cMint = PdfColor.fromInt(0xFF6BAE84);
+    const cWhite = PdfColor.fromInt(0xFFFFFEFD);
+    const cLavender = PdfColor.fromInt(0xFFE6D7F5);
+
+    final totalItems = bahans.length;
+    final totalValue = bahans.fold<int>(0, (s, b) => s + (b.buyPrice * b.stock).round());
+    final lowCount = bahans.where((b) => b.isLow || b.isOut).length;
+
+    pdf.addPage(
+      pw.MultiPage(
+        pageFormat: PdfPageFormat.a4,
+        margin: const pw.EdgeInsets.all(32),
+        build: (ctx) => [
+          _buildPdfHeader(ttf, ttfBold, 'Laporan Stok Bahan', 'Daftar stok bahan baku', cPink, cPinkDeep, cWhite),
+          pw.SizedBox(height: 24),
+          pw.Container(
+            padding: const pw.EdgeInsets.all(16),
+            decoration: pw.BoxDecoration(
+              border: pw.Border.all(color: cPinkDeep),
+              borderRadius: const pw.BorderRadius.all(pw.Radius.circular(8)),
+            ),
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Text('Ringkasan Stok', style: pw.TextStyle(font: ttfBold, fontSize: 16, color: cPinkDeep)),
+                pw.SizedBox(height: 12),
+                _row(ttf, ttfBold, 'Total Bahan', '$totalItems item', cPinkDeep),
+                _row(ttf, ttfBold, 'Total Nilai Stok', Format.rupiah(totalValue), cPinkDeep),
+                _row(ttf, ttfBold, 'Stok Menipis/Habis', '$lowCount bahan', cMint),
+              ],
+            ),
+          ),
+          pw.SizedBox(height: 24),
+          pw.Text('Daftar Bahan', style: pw.TextStyle(font: ttfBold, fontSize: 16, color: cPinkDeep)),
+          pw.SizedBox(height: 12),
+          pw.Table(
+            border: pw.TableBorder.all(color: cPinkDeep),
+            children: [
+              pw.TableRow(
+                decoration: const pw.BoxDecoration(color: cPinkDeep),
+                children: [
+                  _cell(ttfBold, 'No', cPinkDeep),
+                  _cell(ttfBold, 'Bahan', cPinkDeep),
+                  _cell(ttfBold, 'Kategori', cPinkDeep),
+                  _cell(ttfBold, 'Stok', cPinkDeep),
+                  _cell(ttfBold, 'Min', cPinkDeep),
+                  _cell(ttfBold, 'Status', cPinkDeep),
+                  _cell(ttfBold, 'Harga', cPinkDeep),
+                ],
+              ),
+              ...bahans.asMap().entries.map((entry) {
+                final i = entry.key;
+                final b = entry.value;
+                final status = b.isOut ? 'Habis' : b.isLow ? 'Menipis' : 'Aman';
+                return pw.TableRow(
+                  decoration: i.isEven ? const pw.BoxDecoration() : const pw.BoxDecoration(color: cLavender),
+                  children: [
+                    _cell(ttf, '${i + 1}', cText),
+                    _cell(ttf, '${b.emoji ?? ""} ${b.name}', cText),
+                    _cell(ttf, b.category, cText),
+                    _cell(ttf, '${b.stock.toStringAsFixed(b.stock % 1 == 0 ? 0 : 1)} ${b.unit}', cText),
+                    _cell(ttf, '${b.minStock.toStringAsFixed(0)} ${b.unit}', cText),
+                    _cell(ttf, status, cText),
+                    _cell(ttf, Format.rupiah(b.buyPrice), cText),
+                  ],
+                );
+              }),
+            ],
+          ),
+          pw.SizedBox(height: 32),
+          pw.Center(
+            child: pw.Text(
+              'Dicetak: ${_dateFormat(DateTime.now())}',
+              style: pw.TextStyle(font: ttf, fontSize: 10, color: cMuted),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    await Printing.sharePdf(bytes: await pdf.save(), filename: 'Laporan_Stok.pdf');
+  }
+
+  static Future<void> generateHutangPdf() async {
+    final debts = await DatabaseHelper.instance.getDebts();
+    if (debts.isEmpty) return;
+
+    final pdf = pw.Document();
+    final ttf = pw.Font.helvetica();
+    final ttfBold = pw.Font.helveticaBold();
+
+    const cPink = PdfColor.fromInt(0xFFF472A8);
+    const cPinkDeep = PdfColor.fromInt(0xFFE8557E);
+    const cText = PdfColor.fromInt(0xFF4A2F36);
+    const cMuted = PdfColor.fromInt(0xFFB89AA0);
+    const cMint = PdfColor.fromInt(0xFF6BAE84);
+    const cWhite = PdfColor.fromInt(0xFFFFFEFD);
+    const cLavender = PdfColor.fromInt(0xFFE6D7F5);
+
+    String dateFormat(DateTime d) => Format.dateMedium(d);
+
+    final totalPiutang = debts.where((d) => d.isUnpaid).fold<int>(0, (s, d) => s + d.amount);
+    final totalLunas = debts.where((d) => d.isPaid).fold<int>(0, (s, d) => s + d.amount);
+    final overdueCount = debts.where((d) => d.isOverdue).length;
+    final unpaidCount = debts.where((d) => d.isUnpaid).length;
+
+    pdf.addPage(
+      pw.MultiPage(
+        pageFormat: PdfPageFormat.a4,
+        margin: const pw.EdgeInsets.all(32),
+        build: (ctx) => [
+          _buildPdfHeader(ttf, ttfBold, 'Laporan Hutang', 'Piutang pelanggan', cPink, cPinkDeep, cWhite),
+          pw.SizedBox(height: 24),
+          pw.Container(
+            padding: const pw.EdgeInsets.all(16),
+            decoration: pw.BoxDecoration(
+              border: pw.Border.all(color: cPinkDeep),
+              borderRadius: const pw.BorderRadius.all(pw.Radius.circular(8)),
+            ),
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Text('Ringkasan Hutang', style: pw.TextStyle(font: ttfBold, fontSize: 16, color: cPinkDeep)),
+                pw.SizedBox(height: 12),
+                _row(ttf, ttfBold, 'Piutang', Format.rupiah(totalPiutang), cPinkDeep),
+                _row(ttf, ttfBold, 'Sudah Lunas', Format.rupiah(totalLunas), cMint),
+                _row(ttf, ttfBold, 'Belum Lunas', '$unpaidCount pelanggan', cPinkDeep),
+                _row(ttf, ttfBold, 'Jatuh Tempo', '$overdueCount pelanggan', cPinkDeep),
+              ],
+            ),
+          ),
+          pw.SizedBox(height: 24),
+          pw.Text('Daftar Hutang', style: pw.TextStyle(font: ttfBold, fontSize: 16, color: cPinkDeep)),
+          pw.SizedBox(height: 12),
+          pw.Table(
+            border: pw.TableBorder.all(color: cPinkDeep),
+            children: [
+              pw.TableRow(
+                decoration: const pw.BoxDecoration(color: cLavender),
+                children: [
+                  _cell(ttfBold, 'No', cPinkDeep),
+                  _cell(ttfBold, 'Pelanggan', cPinkDeep),
+                  _cell(ttfBold, 'Nominal', cPinkDeep),
+                  _cell(ttfBold, 'Tanggal', cPinkDeep),
+                  _cell(ttfBold, 'Status', cPinkDeep),
+                ],
+              ),
+              ...debts.asMap().entries.map((entry) {
+                final i = entry.key;
+                final d = entry.value;
+                final status = d.isPaid ? 'Lunas' : d.isOverdue ? 'Jatuh Tempo' : 'Belum Lunas';
+                return pw.TableRow(
+                  decoration: i.isEven ? const pw.BoxDecoration() : const pw.BoxDecoration(color: cLavender),
+                  children: [
+                    _cell(ttf, '${i + 1}', cText),
+                    _cell(ttf, '${d.customerName}${d.whatsapp != null ? " (${d.whatsapp})" : ""}', cText),
+                    _cell(ttf, Format.rupiah(d.amount), cText),
+                    _cell(ttf, dateFormat(d.dateTime), cText),
+                    _cell(ttf, status, cText),
+                  ],
+                );
+              }),
+            ],
+          ),
+          pw.SizedBox(height: 32),
+          pw.Center(
+            child: pw.Text(
+              'Dicetak: ${_dateFormat(DateTime.now())}',
+              style: pw.TextStyle(font: ttf, fontSize: 10, color: cMuted),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    await Printing.sharePdf(bytes: await pdf.save(), filename: 'Laporan_Hutang.pdf');
+  }
+
+  static pw.Widget _buildPdfHeader(pw.Font font, pw.Font fontBold, String title, String subtitle,
+      PdfColor pink, PdfColor pinkDeep, PdfColor white) {
+    return pw.Container(
+      padding: const pw.EdgeInsets.all(16),
+      decoration: pw.BoxDecoration(
+        gradient: pw.LinearGradient(
+          begin: pw.Alignment.topLeft,
+          end: pw.Alignment.bottomRight,
+          colors: [pink, pinkDeep],
+        ),
+        borderRadius: const pw.BorderRadius.all(pw.Radius.circular(12)),
+      ),
+      child: pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.center,
+        children: [
+          pw.Text(title, style: pw.TextStyle(font: fontBold, fontSize: 20, color: white)),
+          pw.SizedBox(height: 4),
+          pw.Text(subtitle, style: pw.TextStyle(font: font, fontSize: 12, color: white)),
+        ],
+      ),
+    );
+  }
+
+  static String _dateFormat(DateTime d) => Format.dateMedium(d);
+
   static Future<pw.Document> _generatePdf(ReportData report) async {
     final pdf = pw.Document();
 
-    final fontData = await rootBundle.load('assets/fonts/Quicksand-Regular.ttf');
-    final fontBoldData = await rootBundle.load('assets/fonts/Quicksand-Bold.ttf');
-
-    final ttf = pw.Font.ttf(fontData);
-    final ttfBold = pw.Font.ttf(fontBoldData);
+    final ttf = pw.Font.helvetica();
+    final ttfBold = pw.Font.helveticaBold();
 
     const cPink = PdfColor.fromInt(0xFFF472A8);
     const cPinkDeep = PdfColor.fromInt(0xFFE8557E);

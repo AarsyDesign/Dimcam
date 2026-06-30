@@ -53,8 +53,9 @@ class _ProductionFormScreenState extends State<ProductionFormScreen> {
 
   Future<void> _loadRequirements(int productId) async {
     final db = DatabaseHelper.instance;
+    final bahanProvider = context.read<BahanProvider>();
     final resep = await db.getResep(productId);
-    final bahans = context.read<BahanProvider>().items;
+    final bahans = bahanProvider.items;
 
     final requirements = <_BahanRequirement>[];
     for (final r in resep) {
@@ -118,6 +119,8 @@ class _ProductionFormScreenState extends State<ProductionFormScreen> {
 
     setState(() => _loading = true);
 
+    if (!mounted) return;
+
     try {
       await context.read<ProductionProvider>().process(
             _selectedProduct!.id,
@@ -130,6 +133,7 @@ class _ProductionFormScreenState extends State<ProductionFormScreen> {
       // Refresh bahan provider
       if (mounted) {
         await context.read<BahanProvider>().refresh();
+        if (!mounted) return;
         Navigator.pop(context, true);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Produksi $qty ${_selectedProduct!.name} berhasil')),

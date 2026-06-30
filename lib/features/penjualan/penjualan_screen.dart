@@ -30,16 +30,32 @@ class _PenjualanScreenState extends State<PenjualanScreen> {
   final TextEditingController _searchController = TextEditingController();
   final TextEditingController _qtyController = TextEditingController();
   final TextEditingController _priceController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
 
   Product? _selectedProduct;
   int _hpp = 0;
   bool _quickOpen = false;
 
   @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  void _onScroll() {
+    final provider = context.read<TransactionProvider>();
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent * 0.8) {
+      provider.loadMore();
+    }
+  }
+
+  @override
   void dispose() {
     _searchController.dispose();
     _qtyController.dispose();
     _priceController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -226,8 +242,9 @@ class _PenjualanScreenState extends State<PenjualanScreen> {
                   color: AppColors.pinkAccent,
                   onRefresh: () => provider.refresh(),
                   child: ListView.builder(
+                    controller: _scrollController,
                     padding: const EdgeInsets.fromLTRB(AppDimens.lg, 0, AppDimens.lg, AppDimens.xxxl),
-                    itemCount: provider.items.length + (hasToday ? 1 : 0),
+                    itemCount: provider.items.length + (hasToday ? 1 : 0) + (provider.hasMore ? 1 : 0),
                     itemBuilder: (context, index) {
                       if (hasToday && index == 0) {
                         return Padding(
@@ -235,7 +252,15 @@ class _PenjualanScreenState extends State<PenjualanScreen> {
                           child: _TodayCard(today: today),
                         );
                       }
-                      final i = hasToday ? index - 1 : index;
+                      int i = hasToday ? index - 1 : index;
+                      if (i >= provider.items.length) {
+                        return const Padding(
+                          padding: EdgeInsets.all(AppDimens.lg),
+                          child: Center(
+                            child: CircularProgressIndicator(color: AppColors.pinkAccent),
+                          ),
+                        );
+                      }
                       final tx = provider.items[i];
                       return Padding(
                         padding: const EdgeInsets.only(bottom: AppDimens.md),

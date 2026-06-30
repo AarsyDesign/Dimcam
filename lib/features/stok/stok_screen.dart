@@ -11,9 +11,10 @@ import '../../core/widgets/common/feature_header.dart';
 import '../../core/widgets/common/kawaii_badge.dart';
 import '../../data/models/bahan.dart';
 import '../../providers/bahan_provider.dart';
+import '../../features/laporan/pdf_export_service.dart';
 import 'bahan_detail_screen.dart';
 import 'purchase_form_screen.dart';
-import 'production_form_screen.dart';
+import '../produksi/production_form_screen.dart';
 
 class StokScreen extends StatefulWidget {
   const StokScreen({super.key});
@@ -24,7 +25,15 @@ class StokScreen extends StatefulWidget {
 
 class _StokScreenState extends State<StokScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  final _searchController = TextEditingController();
   String _filter = 'all';
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _tabController.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -37,12 +46,6 @@ class _StokScreenState extends State<StokScreen> with SingleTickerProviderStateM
         });
       }
     });
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
   }
 
   void _showActionMenu() {
@@ -73,16 +76,15 @@ class _StokScreenState extends State<StokScreen> with SingleTickerProviderStateM
               title: 'Pembelian Bahan',
               subtitle: 'Tambah stok dari pembelian',
               color: AppColors.pinkAccent,
-              onTap: () {
+              onTap: () async {
+                final bahanProvider = context.read<BahanProvider>();
                 Navigator.pop(context);
-                Navigator.push(
+                await Navigator.push(
                   context,
                   MaterialPageRoute(builder: (_) => const PurchaseFormScreen()),
-                ).then((_) {
-                  if (mounted) {
-                    context.read<BahanProvider>().refresh();
-                  }
-                });
+                );
+                if (!mounted) return;
+                bahanProvider.refresh();
               },
             ),
             const SizedBox(height: AppDimens.md),
@@ -91,16 +93,26 @@ class _StokScreenState extends State<StokScreen> with SingleTickerProviderStateM
               title: 'Produksi',
               subtitle: 'Kurangi stok untuk produksi',
               color: AppColors.coral,
-              onTap: () {
+              onTap: () async {
+                final bahanProvider = context.read<BahanProvider>();
                 Navigator.pop(context);
-                Navigator.push(
+                await Navigator.push(
                   context,
                   MaterialPageRoute(builder: (_) => const ProductionFormScreen()),
-                ).then((_) {
-                  if (mounted) {
-                    context.read<BahanProvider>().refresh();
-                  }
-                });
+                );
+                if (!mounted) return;
+                bahanProvider.refresh();
+              },
+            ),
+            const SizedBox(height: AppDimens.md),
+            _ActionTile(
+              icon: Icons.picture_as_pdf_rounded,
+              title: 'Export PDF',
+              subtitle: 'Cetak laporan stok',
+              color: AppColors.pinkDeep,
+              onTap: () async {
+                Navigator.pop(context);
+                await PdfExportService.generateStokPdf();
               },
             ),
             const SizedBox(height: AppDimens.xxxl),
@@ -111,12 +123,13 @@ class _StokScreenState extends State<StokScreen> with SingleTickerProviderStateM
   }
 
   void _viewDetail(Bahan bahan) {
+    final bahanProvider = context.read<BahanProvider>();
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => BahanDetailScreen(bahan: bahan)),
     ).then((_) {
       if (mounted) {
-        context.read<BahanProvider>().refresh();
+        bahanProvider.refresh();
       }
     });
   }
@@ -132,6 +145,10 @@ class _StokScreenState extends State<StokScreen> with SingleTickerProviderStateM
             subtitle: 'Kelola stok bahan baku',
             icon: Icons.inventory_2_rounded,
             onAction: _showActionMenu,
+          ),
+          _SearchBar(
+            controller: _searchController,
+            provider: context.read<BahanProvider>(),
           ),
           Container(
             color: AppColors.white,
@@ -159,7 +176,10 @@ class _StokScreenState extends State<StokScreen> with SingleTickerProviderStateM
                   );
                 }
 
-                final filtered = _filterBahans(provider.items);
+                final searched = _searchController.text.isNotEmpty
+                    ? provider.filteredItems
+                    : provider.items;
+                final filtered = _filterBahans(searched);
 
                 if (filtered.isEmpty) {
                   return EmptyState(
@@ -211,6 +231,45 @@ class _StokScreenState extends State<StokScreen> with SingleTickerProviderStateM
       'out' => 'Tidak ada stok habis',
       _ => 'Belum ada bahan terdaftar',
     };
+  }
+}
+
+class _SearchBar extends StatefulWidget {
+  const _SearchBar({required this.controller, required this.provider});
+  final TextEditingController controller;
+  final BahanProvider provider;
+
+  @override
+  State<_SearchBar> createState() => _SearchBarState();
+}
+
+class _SearchBarState extends State<_SearchBar> {
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(AppDimens.lg, AppDimens.md, AppDimens.lg, 0),
+      child: TextField(
+        controller: widget.controller,
+        decoration: InputDecoration(
+          hintText: 'Cari bahan...',
+          prefixIcon: const Icon(Icons.search_rounded),
+          suffixIcon: widget.controller.text.isNotEmpty
+              ? IconButton(
+                  icon: const Icon(Icons.clear_rounded),
+                  onPressed: () {
+                    widget.controller.clear();
+                    widget.provider.setSearchQuery('');
+                    setState(() {});
+                  },
+                )
+              : null,
+        ),
+        onChanged: (value) {
+          widget.provider.setSearchQuery(value);
+          setState(() {});
+        },
+      ),
+    );
   }
 }
 

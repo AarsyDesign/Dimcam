@@ -22,6 +22,14 @@ class ProduksiScreen extends StatefulWidget {
 }
 
 class _ProduksiScreenState extends State<ProduksiScreen> {
+  final _searchController = TextEditingController();
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
   void _addProduction() {
     Navigator.push(
       context,
@@ -65,11 +73,13 @@ class _ProduksiScreenState extends State<ProduksiScreen> {
                   );
                 }
 
-                if (provider.items.isEmpty) {
-                  return const EmptyState(
+                final items = provider.filteredItems;
+
+                if (items.isEmpty) {
+                  return EmptyState(
                     icon: Icons.factory_rounded,
                     title: 'Belum ada produksi',
-                    subtitle: 'Mulai produksi dengan tap tombol +',
+                    subtitle: _searchController.text.isNotEmpty ? 'Pencarian tidak ditemukan' : 'Mulai produksi dengan tap tombol +',
                   );
                 }
 
@@ -78,13 +88,17 @@ class _ProduksiScreenState extends State<ProduksiScreen> {
                   onRefresh: () => provider.refresh(),
                   child: Column(
                     children: [
+                      _SearchBar(
+                        controller: _searchController,
+                        provider: provider,
+                      ),
                       _SummaryCard(provider: provider),
                       Expanded(
                         child: ListView.builder(
                           padding: const EdgeInsets.fromLTRB(AppDimens.lg, 0, AppDimens.lg, AppDimens.xxxl),
-                          itemCount: provider.items.length,
+                          itemCount: items.length,
                           itemBuilder: (context, index) {
-                            final production = provider.items[index];
+                            final production = items[index];
                             return Padding(
                               padding: const EdgeInsets.only(bottom: AppDimens.md),
                               child: _ProductionCard(
@@ -305,5 +319,44 @@ class _ProductionCard extends StatelessWidget {
   bool _isToday(DateTime date) {
     final now = DateTime.now();
     return date.year == now.year && date.month == now.month && date.day == now.day;
+  }
+}
+
+class _SearchBar extends StatefulWidget {
+  const _SearchBar({required this.controller, required this.provider});
+  final TextEditingController controller;
+  final ProductionProvider provider;
+
+  @override
+  State<_SearchBar> createState() => _SearchBarState();
+}
+
+class _SearchBarState extends State<_SearchBar> {
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(AppDimens.lg, AppDimens.md, AppDimens.lg, 0),
+      child: TextField(
+        controller: widget.controller,
+        decoration: InputDecoration(
+          hintText: 'Cari produksi...',
+          prefixIcon: const Icon(Icons.search_rounded),
+          suffixIcon: widget.controller.text.isNotEmpty
+              ? IconButton(
+                  icon: const Icon(Icons.clear_rounded),
+                  onPressed: () {
+                    widget.controller.clear();
+                    widget.provider.setSearchQuery('');
+                    setState(() {});
+                  },
+                )
+              : null,
+        ),
+        onChanged: (value) {
+          widget.provider.setSearchQuery(value);
+          setState(() {});
+        },
+      ),
+    );
   }
 }

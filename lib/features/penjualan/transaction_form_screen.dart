@@ -307,7 +307,7 @@ class _ProductSelector extends StatelessWidget {
           Consumer<ProductProvider>(
             builder: (context, provider, _) {
               if (provider.loading) {
-                return const Center(child: CircularProgressIndicator());
+                return const SizedBox(height: 48, child: Center(child: CircularProgressIndicator()));
               }
 
               return DropdownButtonFormField<Product>(
@@ -378,6 +378,9 @@ class _CustomerSelector extends StatelessWidget {
           const SizedBox(height: AppDimens.md),
           Consumer<CustomerProvider>(
             builder: (context, provider, _) {
+              if (provider.loading) {
+                return const SizedBox(height: 48, child: Center(child: CircularProgressIndicator()));
+              }
               return DropdownButtonFormField<Customer>(
                 initialValue: selectedCustomer,
                 decoration: const InputDecoration(

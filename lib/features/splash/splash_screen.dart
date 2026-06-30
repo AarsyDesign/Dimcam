@@ -163,7 +163,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                 child: FadeTransition(
                   opacity: _text,
                   child: Text(
-                    'Dibuat dengan 💖 untuk dimsum lezat',
+                    'Untuk Nabila Salsabila Wardana 💕',
                     textAlign: TextAlign.center,
                     style: AppTextStyles.caption.copyWith(color: AppColors.white.withValues(alpha: 0.85)),
                   ),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../constants/app_dimens.dart';
-import '../../theme/app_colors.dart';
+import '../../utils/theme_ext.dart';
 
 /// 💳 Kartu rounded dengan soft shadow lembut + border pink tipis.
 class AppCard extends StatelessWidget {
@@ -33,15 +33,15 @@ class AppCard extends StatelessWidget {
     return Container(
       margin: margin,
       decoration: BoxDecoration(
-        color: gradient == null ? (color ?? AppColors.white) : null,
+        color: gradient == null ? (color ?? context.cardBg) : null,
         gradient: gradient,
         borderRadius: BorderRadius.circular(radius),
-        border: border ?? Border.all(color: AppColors.pinkSoft, width: 1),
+        border: border ?? Border.all(color: context.cardBorderColor, width: 1),
         boxShadow: [
           BoxShadow(
-            color: shadowColor.withValues(alpha: 0.35),
+            color: (context.isDark ? Colors.black.withValues(alpha: 0.4) : shadowColor.withValues(alpha: 0.35)),
             blurRadius: AppDimens.blurSoft,
-            offset: const Offset(0, 6),
+            offset: Offset(0, context.isDark ? 4 : 6),
           ),
         ],
       ),

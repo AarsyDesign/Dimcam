@@ -3,50 +3,92 @@ import 'package:flutter/foundation.dart';
 import '../data/database/database_helper.dart';
 import '../data/models/transaction.dart';
 
-/// 💰 Provider transaksi penjualan — CRUD + pencarian.
+/// 💰 Provider transaksi penjualan — CRUD + pencarian + pagination.
 class TransactionProvider extends ChangeNotifier {
   TransactionProvider() {
-    _load();
+    _loadPage();
   }
 
   final DatabaseHelper _db = DatabaseHelper.instance;
+
+  static const int _pageSize = 20;
 
   List<Transaction> _items = [];
   List<Transaction> get items => _items;
   bool _loading = true;
   bool get loading => _loading;
+  bool _hasMore = true;
+  bool get hasMore => _hasMore;
+  int _page = 0;
 
   String _query = '';
   String get query => _query;
 
-  Future<void> _load() async {
+  DateTime? _startDate;
+  DateTime? _endDate;
+  DateTime? get startDate => _startDate;
+  DateTime? get endDate => _endDate;
+
+  bool get hasDateFilter => _startDate != null || _endDate != null;
+
+  Future<void> _loadPage() async {
     try {
-      if (_query.isEmpty) {
-        _items = await _db.getTransactions();
+      final newItems = await _db.getTransactions(
+        limit: _pageSize,
+        offset: _page * _pageSize,
+        query: _query.isEmpty ? null : _query,
+        startDate: _startDate,
+        endDate: _endDate,
+      );
+      _hasMore = newItems.length == _pageSize;
+      if (_page == 0) {
+        _items = newItems;
       } else {
-        _items = await _db.searchTransactions(_query);
+        _items = [..._items, ...newItems];
       }
     } catch (_) {
-      _items = [];
+      if (_page == 0) _items = [];
     }
     _loading = false;
     notifyListeners();
   }
 
-  Future<void> refresh() async {
+  Future<void> loadMore() async {
+    if (_loading || !_hasMore) return;
     _loading = true;
     notifyListeners();
-    await _load();
+    _page++;
+    await _loadPage();
+  }
+
+  Future<void> refresh() async {
+    _page = 0;
+    _hasMore = true;
+    _loading = true;
+    notifyListeners();
+    await _loadPage();
   }
 
   Future<void> setQuery(String q) async {
     _query = q.trim();
-    await _load();
+    await refresh();
   }
 
   Future<void> clearQuery() async {
     _query = '';
-    await _load();
+    await refresh();
+  }
+
+  Future<void> setDateRange(DateTime? start, DateTime? end) async {
+    _startDate = start;
+    _endDate = end;
+    await refresh();
+  }
+
+  Future<void> clearDateRange() async {
+    _startDate = null;
+    _endDate = null;
+    await refresh();
   }
 
   Future<void> add(Transaction t) async {

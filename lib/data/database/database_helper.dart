@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:path/path.dart' as p;
 import 'package:sqflite/sqflite.dart' hide Transaction;
 
@@ -24,6 +25,18 @@ class DatabaseHelper {
 
   Database? _db;
   bool _seeded = false;
+
+  /// Untuk test — inject database langsung.
+  @visibleForTesting
+  static set testDb(Database? db) => instance._db = db;
+
+  /// Reset singleton untuk test isolation.
+  @visibleForTesting
+  static void resetForTest() {
+    instance._db?.close();
+    instance._db = null;
+    instance._seeded = false;
+  }
 
   Future<Database> get database async {
     _db ??= await _initDb();
@@ -308,9 +321,9 @@ class DatabaseHelper {
   }
 
   // ----------------- BAHAN -----------------
-  Future<List<Bahan>> getBahans() async {
+  Future<List<Bahan>> getBahans({int? limit, int? offset}) async {
     final db = await database;
-    final maps = await db.query('bahans', orderBy: 'category ASC, name ASC');
+    final maps = await db.query('bahans', orderBy: 'category ASC, name ASC', limit: limit, offset: offset);
     return maps.map(Bahan.fromMap).toList();
   }
 
@@ -388,9 +401,39 @@ class DatabaseHelper {
   }
 
   // ----------------- TRANSACTIONS -----------------
-  Future<List<Transaction>> getTransactions({int? limit}) async {
+  Future<List<Transaction>> getTransactions({
+    int? limit,
+    int? offset,
+    DateTime? startDate,
+    DateTime? endDate,
+    String? query,
+  }) async {
     final db = await database;
-    final maps = await db.query('transactions', orderBy: 'date_time DESC', limit: limit);
+    final conditions = <String>[];
+    final args = <dynamic>[];
+
+    if (startDate != null) {
+      conditions.add('date_time >= ?');
+      args.add(startDate.millisecondsSinceEpoch);
+    }
+    if (endDate != null) {
+      conditions.add('date_time <= ?');
+      args.add(endDate.millisecondsSinceEpoch);
+    }
+    if (query != null && query.isNotEmpty) {
+      conditions.add('(product_name LIKE ? OR note LIKE ?)');
+      args.addAll(['%$query%', '%$query%']);
+    }
+
+    final where = conditions.isEmpty ? null : conditions.join(' AND ');
+    final maps = await db.query(
+      'transactions',
+      where: where,
+      whereArgs: args.isEmpty ? null : args,
+      orderBy: 'date_time DESC',
+      limit: limit,
+      offset: offset,
+    );
     return maps.map(Transaction.fromMap).toList();
   }
 
@@ -655,9 +698,9 @@ class DatabaseHelper {
   }
 
   /// Get all productions.
-  Future<List<Production>> getProductions({int? limit}) async {
+  Future<List<Production>> getProductions({int? limit, int? offset}) async {
     final db = await database;
-    final maps = await db.query('productions', orderBy: 'date_time DESC', limit: limit);
+    final maps = await db.query('productions', orderBy: 'date_time DESC', limit: limit, offset: offset);
     return maps.map(Production.fromMap).toList();
   }
 
