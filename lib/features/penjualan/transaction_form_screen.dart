@@ -311,7 +311,7 @@ class _ProductSelector extends StatelessWidget {
               }
 
               return DropdownButtonFormField<Product>(
-                value: selectedProduct,
+                initialValue: selectedProduct,
                 decoration: const InputDecoration(
                   hintText: 'Pilih produk',
                   prefixIcon: Icon(Icons.search_rounded),
@@ -382,7 +382,7 @@ class _CustomerSelector extends StatelessWidget {
                 return const SizedBox(height: 48, child: Center(child: CircularProgressIndicator()));
               }
               return DropdownButtonFormField<Customer>(
-                value: selectedCustomer,
+                initialValue: selectedCustomer,
                 decoration: const InputDecoration(
                   hintText: 'Pilih pelanggan (opsional)',
                   prefixIcon: Icon(Icons.search_rounded),
