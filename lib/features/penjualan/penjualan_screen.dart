@@ -225,9 +225,6 @@ class _PenjualanScreenState extends State<PenjualanScreen> {
                   );
                 }
 
-                final today = provider.today;
-                final hasToday = today.isNotEmpty;
-
                 if (provider.items.isEmpty) {
                   return EmptyState(
                     icon: Icons.receipt_long_rounded,
@@ -244,15 +241,9 @@ class _PenjualanScreenState extends State<PenjualanScreen> {
                   child: ListView.builder(
                     controller: _scrollController,
                     padding: const EdgeInsets.fromLTRB(AppDimens.lg, 0, AppDimens.lg, AppDimens.xxxl),
-                    itemCount: provider.items.length + (hasToday ? 1 : 0) + (provider.hasMore ? 1 : 0),
+                    itemCount: provider.items.length + (provider.hasMore ? 1 : 0),
                     itemBuilder: (context, index) {
-                      if (hasToday && index == 0) {
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: AppDimens.md),
-                          child: _TodayCard(today: today),
-                        );
-                      }
-                      int i = hasToday ? index - 1 : index;
+                      int i = index;
                       if (i >= provider.items.length) {
                         return const Padding(
                           padding: EdgeInsets.all(AppDimens.lg),
